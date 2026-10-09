@@ -7,18 +7,17 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from xgboost import XGBClassifier
 
 from data.preprocessing import build_preprocessor
 
 MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
-MODEL_NAMES = ["Logistic Regression", "Decision Tree", "kNN", "Random Forest", "XGBoost"]
+MODEL_NAMES = ["Logistic Regression", "Decision Tree", "kNN", "Random Forest", "SVM"]
 
 
 def get_model_specs(y_train):
     """name -> (estimateur, grille de paramètres préfixée 'clf__')."""
-    spw = float((y_train == 0).sum() / max((y_train == 1).sum(), 1))
     return {
         "Logistic Regression": (
             LogisticRegression(max_iter=1000, class_weight="balanced"),
@@ -36,9 +35,9 @@ def get_model_specs(y_train):
             RandomForestClassifier(class_weight="balanced", random_state=42, n_jobs=-1),
             {"clf__n_estimators": [100, 200], "clf__max_depth": [None, 10]},
         ),
-        "XGBoost": (
-            XGBClassifier(scale_pos_weight=spw, eval_metric="logloss", random_state=42),
-            {"clf__n_estimators": [100, 200], "clf__max_depth": [3, 5]},
+        "SVM": (
+            SVC(probability=True, class_weight="balanced", random_state=42),
+            {"clf__C": [0.1, 1, 10], "clf__kernel": ["linear", "rbf"]},
         ),
     }
 
